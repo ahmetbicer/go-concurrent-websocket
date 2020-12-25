@@ -37,7 +37,7 @@ export default function App() {
       Accelerometer.setUpdateInterval(300);
       setAccSubscription(
         Accelerometer.addListener(accelerometerData => {
-          socket.send(JSON.stringify(accelerometerData));
+          socket.send(JSON.stringify({ type: "acc", data: accelerometerData }));
           setAccData(accelerometerData);
         })
       );
@@ -59,7 +59,7 @@ export default function App() {
       Gyroscope.setUpdateInterval(600);
       setGyroSubscription(
         Gyroscope.addListener(gyroscopeData => {
-          socket.send(JSON.stringify(gyroscopeData));
+          socket.send(JSON.stringify({ type: "gyro", data: gyroscopeData }));
           setGyroData(gyroscopeData);
         })
       );
@@ -81,7 +81,7 @@ export default function App() {
       Magnetometer.setUpdateInterval(900);
       setMagSubscription(
         Magnetometer.addListener(magData => {
-          socket.send(JSON.stringify(magData));
+          socket.send(JSON.stringify({ type: "mag", data: magData }));
           setMagData(magData);
         })
       );
