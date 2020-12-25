@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -25,11 +24,15 @@ var (
 	space   = []byte{' '}
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+type Hub struct {
+	clients map[*Client]bool
 
+	broadcast chan []byte
+
+	register chan *Client
+
+	unregister chan *Client
+}
 type Client struct {
 	hub *Hub
 
@@ -70,7 +73,6 @@ func (c *Client) writePump() {
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -79,14 +81,8 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
 
-			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
-			}
+			w.Write(message)
 
 			if err := w.Close(); err != nil {
 				return
@@ -100,39 +96,8 @@ func (c *Client) writePump() {
 	}
 }
 
-// serveWs handles websocket requests from the peer.
-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	client.hub.register <- client
-
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
-	go client.readPump()
-}
-
-type Hub struct {
-	clients map[*Client]bool
-
-	broadcast chan []byte
-
-	register chan *Client
-
-	unregister chan *Client
-}
-
-var addr = flag.String("addr", ":8080", "http service address")
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "index.html")
-}
-
 func newHub() *Hub {
+	//create new hub and return it
 	return &Hub{
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
@@ -145,13 +110,18 @@ func (h *Hub) run() {
 	for {
 		select {
 		case client := <-h.register:
+			//client connected
 			h.clients[client] = true
+			log.Println(h.clients)
 		case client := <-h.unregister:
+			//client disconnected
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 			}
 		case message := <-h.broadcast:
+			//one client sended message
+			//broadcast all other clients
 			for client := range h.clients {
 				select {
 				case client.send <- message:
@@ -164,15 +134,42 @@ func (h *Hub) run() {
 	}
 }
 
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "index.html")
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
+
+	//write messages from client to hub
+	go client.writePump()
+
+	//read messages from client
+	go client.readPump()
+}
+
 func main() {
-	flag.Parse()
 	hub := newHub()
 	go hub.run()
+
 	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	err := http.ListenAndServe(*addr, nil)
+
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
