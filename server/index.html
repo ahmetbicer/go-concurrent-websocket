@@ -10,8 +10,11 @@
 
 <body>
     <script>
-           var x, y, z;
-            var xpos, ypos;
+            var a_x = 0, a_y = 0, a_z = 0;
+            var g_x = 0, g_y = 0, g_z = 0;
+            var m_x = 0, m_y = 0, m_z = 0;
+
+            var xpos = 200, ypos = 200;
             var conn;
 
             function setup() {
@@ -20,31 +23,38 @@
                 conn = new WebSocket("ws://" + document.location.host + "/ws");
 
                 conn.onopen = function () {
-                    console.log("socket başladı");
+                    console.log("socket bağlandı");
                 }
 
                 conn.onmessage = function (evt) {
                     try {
                         let j = JSON.parse(evt.data);
-                        x = j.x;
-                        y = j.y;
-                        z = j.z;
+                        if(j.type == "acc"){
+                            a_x = j.data.x;
+                            a_y = j.data.y;
+                            a_z = j.data.z;
+                        }
+                        else if(j.type == "gyro"){
+                            g_x = j.data.x;
+                            g_y = j.data.y;
+                            g_z = j.data.z;
+                        }
+                        else if (j.type == "mag") {
+                            m_x = j.data.x;
+                            m_y = j.data.y;
+                            m_z = j.data.z;
+                        }
                     } catch (error) {
                         console.log(error, evt);
                     }
                 }
-
-                xpos = 200;
-                ypos = 200;
-                x = 0;
-                y = 0;
             }
 
             function draw() {
                 background(255);
 
-                xpos = xpos - x * 2;
-                ypos = ypos + y * 2;
+                xpos = xpos - a_x * 2;
+                ypos = ypos + a_y * 2;
 
                 if (xpos > 400) { xpos = 0; }
                 if (xpos < 0) { xpos = 400; }
@@ -56,9 +66,20 @@
 
                 fill(0);
                 noStroke();
-                text("x: " + x, 25, 25);
-                text("y: " + y, 25, 50);
-                text("z: " + z, 25, 75);
+                text("ACCELEROMETER", 25, 0);
+                text("x: " + a_x, 25, 25);
+                text("y: " + a_y, 25, 50);
+                text("z: " + a_z, 25, 75);
+
+                text("GYROSCOPE", 25, 100);
+                text("x: " + g_x, 25, 125);
+                text("y: " + g_y, 25, 150);
+                text("z: " + g_z, 25, 175);
+
+                text("MAGNETOMETER", 25, 200);
+                text("x: " + m_x, 25, 225);
+                text("y: " + m_y, 25, 250);
+                text("z: " + m_z, 25, 275);
             }
     </script>
 </body>
