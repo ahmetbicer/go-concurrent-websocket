@@ -26,9 +26,9 @@
                 conn.onmessage = function (evt) {
                     try {
                         let j = JSON.parse(evt.data);
-                        x = j[0];
-                        y = j[1];
-                        z = j[2];
+                        x = j.x;
+                        y = j.y;
+                        z = j.z;
                     } catch (error) {
                         console.log(error, evt);
                     }
