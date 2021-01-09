@@ -5,10 +5,189 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.4/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.4/addons/p5.dom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.4/addons/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"
+        integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+        crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
+    <div id="parentContainer" style="height:50%; width: 100%;">
+        <div id="chartContainer1" style="float: left; width: 33%;">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div id="chartContainer2" style="float: right; width: 33%;">
+            <canvas id="myChart2"></canvas>
+        </div>
+        <div id="chartContainer3" style="float: right; width: 33%;">
+            <canvas id="myChart3"></canvas>
+        </div>
+    </div>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                {
+                    label: 'Accelerometer X',
+                    data: [],
+                    borderWidth: 2,
+                    fill: true,
+                    backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                        ],
+                },
+                {
+                    label: 'Accelerometer Y',
+                    data: [],
+                    borderWidth: 2,
+                    fill: true,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.2)',
+                       
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                    ],
+                },
+                {
+                    label: 'Accelerometer Z',
+                    data: [],
+                    borderWidth: 2,
+                    fill: true,
+                    backgroundColor: [
+                        'rgba(255, 206, 86, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 206, 86, 1)',
+                    ],
+                },
+            ]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+        var ctx2 = document.getElementById('myChart2').getContext('2d');
+        var myChart2 = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Gyroscope X',
+                        data: [],
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                    },
+                    {
+                        label: 'Gyroscope Y',
+                        data: [],
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: [
+                            'rgba(153, 102, 255, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(153, 102, 255, 1)',
+                        ],
+                    },
+                    {
+                        label: 'Gyroscope Z',
+                        data: [],
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: [
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                    },
+                ]
+            },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        var ctx3 = document.getElementById('myChart3').getContext('2d');
+        var myChart3 = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Magnetometer X',
+                            data: [],
+                            borderWidth: 2,
+                            fill: true,
+                            backgroundColor: [
+                                'rgba(175, 192, 192, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgba(175, 192, 192, 1)',
+                            ],
+                        },
+                        {
+                            label: 'Magnetometer Y',
+                            data: [],
+                            borderWidth: 2,
+                            fill: true,
+                            backgroundColor: [
+                                'rgba(154, 162, 235, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgba(154, 162, 235, 1)',
+                            ],
+                        },
+                        {
+                            label: 'Magnetometer Z',
+                            data: [],
+                            borderWidth: 2,
+                            fill: true,
+                            backgroundColor: [
+                                'rgba(55, 206, 86, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgba(55, 206, 86, 1)',
+                            ],
+                        },
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+    </script>
     <script>
             var a_x = 0, a_y = 0, a_z = 0;
             var g_x = 0, g_y = 0, g_z = 0;
@@ -16,6 +195,7 @@
 
             var xpos = 200, ypos = 200;
             var conn;
+            var angle;
 
             function setup() {
                 createCanvas(400, 400);
@@ -33,16 +213,60 @@
                             a_x = j.data.x;
                             a_y = j.data.y;
                             a_z = j.data.z;
+
+                            myChart.data.labels.push("Data");
+                            myChart.data.datasets.forEach((dataset) => {
+                                if(dataset.label == "Accelerometer X"){
+                                    dataset.data.push(a_x);
+                                }
+                                else if(dataset.label == "Accelerometer Y"){
+                                    dataset.data.push(a_y);
+                                }
+                                else if (dataset.label == "Accelerometer Z") {
+                                    dataset.data.push(a_z);
+                                }
+                            });
+                            myChart.update();
                         }
                         else if(j.type == "gyro"){
                             g_x = j.data.x;
                             g_y = j.data.y;
                             g_z = j.data.z;
+
+                            myChart2.data.labels.push("Data");
+                            myChart2.data.datasets.forEach((dataset) => {
+                                if (dataset.label == "Gyroscope X") {
+                                    dataset.data.push(g_x);
+                                }
+                                else if (dataset.label == "Gyroscope Y") {
+                                    dataset.data.push(g_y);
+                                }
+                                else if (dataset.label == "Gyroscope Z") {
+                                    dataset.data.push(g_z);
+                                }
+                            });
+                            myChart2.update();
                         }
                         else if (j.type == "mag") {
-                            m_x = j.data.x;
-                            m_y = j.data.y;
-                            m_z = j.data.z;
+                            let { x, y, z } = j.data;
+
+                            m_x = x;
+                            m_y = y;
+                            m_z = z;
+
+                            myChart3.data.labels.push("Data");
+                            myChart3.data.datasets.forEach((dataset) => {
+                                if (dataset.label == "Magnetometer X") {
+                                    dataset.data.push(m_x);
+                                }
+                                else if (dataset.label == "Magnetometer Y") {
+                                    dataset.data.push(m_y);
+                                }
+                                else if (dataset.label == "Magnetometer Z") {
+                                    dataset.data.push(m_z);
+                                }
+                            });
+                            myChart3.update();
                         }
                     } catch (error) {
                         console.log(error, evt);
@@ -66,7 +290,7 @@
 
                 fill(0);
                 noStroke();
-                text("ACCELEROMETER", 25, 0);
+                text("ACCELEROMETER", 25, 10);
                 text("x: " + a_x, 25, 25);
                 text("y: " + a_y, 25, 50);
                 text("z: " + a_z, 25, 75);
